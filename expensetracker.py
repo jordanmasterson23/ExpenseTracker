@@ -14,6 +14,7 @@ def createTables():
         c.execute("""CREATE TABLE rent (amount integer, payee text, category text, date date)""")
         c.execute("""CREATE TABLE car (amount integer, payee text, category text, date date)""")
         c.execute("""CREATE TABLE school (amount integer, payee text, category text, date date)""")
+        mainMenu()
     except sqlite3.OperationalError:
         mainMenu()
 
