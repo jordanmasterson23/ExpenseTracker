@@ -1,17 +1,21 @@
 import sqlite3
 
 ## Connect to database
-conn = sqlite3.connect(':memory:')
+conn = sqlite3.connect('expenses.db')
 c = conn.cursor()
 
-## Create tables
-c.execute("""CREATE TABLE budgets (creditcard integer, household integer, savings integer, rent integer, car integer, school integer)""")
-c.execute("""CREATE TABLE creditcard (amount integer, payee text, category text, date date)""")
-c.execute("""CREATE TABLE household (amount integer, payee text, category text, date date)""")
-c.execute("""CREATE TABLE savings (amount integer, payee text, category text, date date)""")
-c.execute("""CREATE TABLE rent (amount integer, payee text, category text, date date)""")
-c.execute("""CREATE TABLE car (amount integer, payee text, category text, date date)""")
-c.execute("""CREATE TABLE school (amount integer, payee text, category text, date date)""")
+def createTables():
+    try:
+        c.execute("""CREATE TABLE budgets (spending integer, creditcard integer, household integer, savings integer, rent integer, car integer, school integer)""")
+        c.execute("""CREATE TABLE spending (amount integer, payee text, category text, date date)""")
+        c.execute("""CREATE TABLE creditcard (amount integer, payee text, category text, date date)""")
+        c.execute("""CREATE TABLE household (amount integer, payee text, category text, date date)""")
+        c.execute("""CREATE TABLE savings (amount integer, payee text, category text, date date)""")
+        c.execute("""CREATE TABLE rent (amount integer, payee text, category text, date date)""")
+        c.execute("""CREATE TABLE car (amount integer, payee text, category text, date date)""")
+        c.execute("""CREATE TABLE school (amount integer, payee text, category text, date date)""")
+    except sqlite3.OperationalError:
+        mainMenu()
 
 ## Add a transaction
 class Transaction:
@@ -32,22 +36,12 @@ def insertData(transaction, account):
 
 def balance(account):
     total_net = []
-    c.execute("SELECT * FROM " + account + " WHERE payee=:pay", {'pay': 'Dish'})
+    c.execute("SELECT * FROM " + account)
     check = c.fetchall()
     for entries in check:
         entry = entries[0]
         total_net.append(entry)
     return sum(total_net)
-
-def newTransaction():
-    choice = ''
-    while choice not in 'e d'.split():
-        choice = input("\nWhat kind of transaction do you want to make?\n"
-                       "Enter 'E' to add an expense, 'I' to add income or 'T' to make a transfer: ").lower()
-    if choice == 'e':
-        expense()
-    if choice == 'd':
-        deposit()
 
 def expense():
     amount = ''
@@ -60,9 +54,10 @@ def expense():
     payee = input('Payee: ')
     category = input('Category: ')
     date = input('Date (YYYYMMDD): ')
-    account = input('What account (creditcard, household, savings, rent, car, school): ').lower()
+    account = input('What account (spending, creditcard, household, savings, rent, car, school): ').lower()
     transaction = Transaction(amount, payee, category, date)
     insertData(transaction, account)
+    mainMenu()
 
 def deposit():
     amount = ''
@@ -74,19 +69,41 @@ def deposit():
     payee = input('From: ')
     category = 'Deposit'
     date = input('Date (YYYYMMDD): ')
-    account = input('What account (creditcard, household, savings, rent, car, school): ').lower()
+    account = input('What account (spending, creditcard, household, savings, rent, car, school): ').lower()
     transaction = Transaction(amount, payee, category, date)
     insertData(transaction, account)
+    mainMenu()
 
-def overview():
+def transfer():
+    amount = ''
+    while type(amount) != int:
+        try:
+            amount = int(input('Amount: $'))
+        except ValueError:
+            print('Amount must be a number..')
+    amount1 = -amount
+    account1 = input('What account do you want to transfer from: ').lower()
+    account2 = input('What account do you want to transfer to: ').lower()
+    payee1 = 'TRANSFER to ' + account2
+    payee2 = 'TRANSFER from ' + account1
+    category = 'Transfer'
+    date = input('Date (YYYYMMDD): ')
+    transaction1 = Transaction(amount1, payee1, category, date)
+    insertData(transaction1, account1)
+    transaction2 = Transaction(amount, payee2, category, date)
+    insertData(transaction2, account2)
+    mainMenu()
+
+def mainMenu():
     print("MY BUDGET & EXPENSES\n")
-    print("ACCOUNT BALANCES")
+    spending = str(balance('spending'))
     creditcard = str(balance('creditcard'))
     household = str(balance('household'))
     savings = str(balance('savings'))
     rent = str(balance('rent'))
     car = str(balance('car'))
     school = str(balance('school'))
+    print("You have $" + spending + " to spend")
     print("Credit Card: $" + creditcard)
     print("Household: $" + household)
     print("Savings: $" + savings)
@@ -94,16 +111,15 @@ def overview():
     print("Car: $" + car)
     print("School: $" + school)
 
-### TESTING
-def TEST():
-    new_entry = Transaction(100, 'Dish', 'Household', 20190814)
-    another_entry = Transaction(-80, 'Dish', 'Household', 20190814)
-    another_entry2 = Transaction(158, 'Dish', 'Household', 20190815)
-    insertData(new_entry, 'household')
-    insertData(another_entry, 'household')
-    insertData(another_entry2, 'household')
+    choice = ''
+    while choice not in 'e d t'.split():
+        choice = input("\nWhat would you like to do?\n"
+                       "Enter 'E' to add an expense, 'D' to make a deposit or 'T' to make a transfer: ").lower()
+    if choice == 'e':
+        expense()
+    if choice == 'd':
+        deposit()
+    if choice == 't':
+        transfer()
 
-# TEST()
-overview()
-newTransaction()
-overview()
+createTables()
