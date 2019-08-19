@@ -1,10 +1,10 @@
-import sqlite3
+import sqlite3, sys
 
 ## Connect to database
 conn = sqlite3.connect('expenses.db')
 c = conn.cursor()
 
-def createTables():
+def main():
     try:
         c.execute("""CREATE TABLE budgets (spending integer, creditcard integer, household integer, savings integer, rent integer, car integer, school integer)""")
         c.execute("""CREATE TABLE spending (amount integer, payee text, category text, date date)""")
@@ -25,7 +25,6 @@ class Transaction:
         self.payee = pay
         self.category = cat
         self.date = dat
-
     def __repr__(self):
         return "({}, '{}', '{}', {})".format(self.amount, self.payee, self.category, self.date)
 
@@ -95,6 +94,13 @@ def transfer():
     insertData(transaction2, account2)
     mainMenu()
 
+def viewAccount():
+    account = input('What account do you want to view: ').lower()
+    c.execute("SELECT * FROM " + account)
+    check = c.fetchall()
+    for entry in check:
+        print(str(entry[0]) + ' - ' + entry[1] + ' - ' + entry[2] + ' - ' + str(entry[3]))
+
 def mainMenu():
     print("MY BUDGET & EXPENSES\n")
     spending = str(balance('spending'))
@@ -113,14 +119,37 @@ def mainMenu():
     print("School: $" + school)
 
     choice = ''
-    while choice not in 'e d t'.split():
+    while choice not in 'e i t v x'.split():
         choice = input("\nWhat would you like to do?\n"
-                       "Enter 'E' to add an expense, 'D' to make a deposit or 'T' to make a transfer: ").lower()
+                       "E - Add an Expense\n"
+                       "I - Add Income\n"
+                       "T - Make a transfer\n"
+                       "V - View account info\n"
+                       "X - Exit\n"
+                       "\nEnter an option: ").lower()
     if choice == 'e':
         expense()
-    if choice == 'd':
+    if choice == 'i':
         deposit()
     if choice == 't':
         transfer()
+    if choice == 'v':
+        viewAccount()
+    if choice == 'x':
+        conn.close()
+        quit()
 
-createTables()
+def test():
+    test1 = Transaction(1250, 'Dish Network', 'Paycheck', 20190816)
+    test2 = Transaction(-150, 'Progressive', 'Insurance', 20190814)
+    test3 = Transaction(-50, 'Shell', 'Gas', 20190810)
+    test4 = Transaction(20, 'Rachel', 'Stuff', 20190815)
+    test5 = Transaction(1233, 'Dish Network', 'Paycheck', 20190816)
+    insertData(test1, 'Spending')
+    insertData(test2, 'Spending')
+    insertData(test3, 'Spending')
+    insertData(test4, 'Spending')
+    insertData(test5, 'Spending')
+
+if __name__=="__main__":
+    main()
