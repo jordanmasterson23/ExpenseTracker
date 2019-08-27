@@ -140,17 +140,5 @@ def mainMenu():
         conn.close()
         quit()
 
-def test():
-    test1 = Transaction(1250, 'Dish Network', 'Paycheck', 20190816)
-    test2 = Transaction(-150, 'Progressive', 'Insurance', 20190814)
-    test3 = Transaction(-50, 'Shell', 'Gas', 20190810)
-    test4 = Transaction(20, 'Rachel', 'Stuff', 20190815)
-    test5 = Transaction(1233, 'Dish Network', 'Paycheck', 20190816)
-    insertData(test1, 'Spending')
-    insertData(test2, 'Spending')
-    insertData(test3, 'Spending')
-    insertData(test4, 'Spending')
-    insertData(test5, 'Spending')
-
 if __name__=="__main__":
     main()
