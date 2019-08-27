@@ -99,7 +99,8 @@ def viewAccount():
     c.execute("SELECT * FROM " + account)
     check = c.fetchall()
     for entry in check:
-        print(str(entry[0]) + ' - ' + entry[1] + ' - ' + entry[2] + ' - ' + str(entry[3]))
+        print('{}-{}-{}-{}'.format(str(entry[0]), entry[1], entry[2], str(entry[3])))
+    mainMenu()
 
 def mainMenu():
     print("MY BUDGET & EXPENSES\n")
